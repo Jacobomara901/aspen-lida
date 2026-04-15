@@ -7,7 +7,6 @@ import {GLOBALS} from '../globals';
 import {PATRON} from '../loadPatron';
 
 import { logDebugMessage, logInfoMessage, logWarnMessage, logErrorMessage } from '../logging.js';
-import { error } from 'expo-updates/build-cli/utils/log';
 
 const endpoint = ENDPOINT.user;
 
