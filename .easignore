@@ -4,6 +4,7 @@
 #  - they can change at runtime                                   #
 #  - they can be easily downloaded or are machine specfic         #
 ###################################################################
+node_modules/
 code/.expo/**
 code/.expo-shared/**
 code/node_modules/**

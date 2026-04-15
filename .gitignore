@@ -4,6 +4,8 @@
 #  - they can change at runtime                                   #
 #  - they can be easily downloaded or are machine specfic         #
 ###################################################################
+node_modules/
+package-lock.json
 code/.expo/**
 code/.expo-shared/**
 code/node_modules/**
@@ -39,6 +41,11 @@ app-configs/*.projectOwner.json
 code/credentials.json
 code/app.config.js
 code/eas.json
+code/google-services.json
+code/build-*.aab
+code/build-*.apk
+code/build-*.ipa
+code/build-*.tar.gz
 
 scripts/*.sh
 app-configs/google-services.json
