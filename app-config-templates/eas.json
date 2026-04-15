@@ -7,12 +7,13 @@
 	  "yarn": "1.22.19",
 	  "distribution": "store",
 	  "channel": "production",
+	  "environment": "production",
 	  "env": {
 		"APP_ENV": "{{APP_ENV}}",
-		"GOOGLE_SERVICES_JSON": "/"
+		"GOOGLE_SERVICES_JSON": "./google-services.json"
 	  },
 	  "android": {
-		"resourceClass": "large"
+		"resourceClass": "medium"
 	  },
 	  "ios": {
 		"image": "latest",
@@ -22,8 +23,9 @@
 	"beta": {
 	  "extends": "production",
 	  "channel": "beta",
+	  "environment": "preview",
 	  "android": {
-		"resourceClass": "large"
+		"resourceClass": "medium"
 	  },
 	  "ios": {
 		"resourceClass": "medium"
@@ -33,18 +35,20 @@
 	  "extends": "production",
 	  "distribution": "internal",
 	  "channel": "alpha",
+	  "environment": "preview",
 	  "ios": {
 		"simulator": true,
 		"resourceClass": "medium"
 	  },
 	  "android": {
 		"buildType": "apk",
-		"resourceClass": "large"
+		"resourceClass": "medium"
 	  }
 	},
 	"development": {
 	  "extends": "production",
 	  "channel": "development",
+	  "environment": "development",
 	  "developmentClient": true,
 	  "distribution": "internal",
 	  "ios": {
