@@ -1,0 +1,90 @@
+{
+  "cli": {
+    "version": "16.32.0"
+  },
+  "build": {
+    "production": {
+      "yarn": "1.22.19",
+      "distribution": "store",
+      "channel": "production",
+      "environment": "production",
+      "android": {
+        "resourceClass": "medium"
+      },
+      "ios": {
+        "image": "latest",
+        "resourceClass": "medium"
+      }
+    },
+    "beta": {
+      "extends": "production",
+      "channel": "beta",
+      "environment": "preview",
+      "android": {
+        "resourceClass": "medium"
+      },
+      "ios": {
+        "resourceClass": "medium"
+      }
+    },
+    "alpha": {
+      "extends": "production",
+      "distribution": "internal",
+      "channel": "alpha",
+      "environment": "preview",
+      "ios": {
+        "simulator": true,
+        "resourceClass": "medium"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "medium"
+      }
+    },
+    "development": {
+      "extends": "production",
+      "channel": "development",
+      "environment": "development",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "resourceClass": "medium"
+      }
+    },
+    "internal": {
+      "extends": "production",
+      "channel": "internal"
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "production",
+        "releaseStatus": "draft",
+        "serviceAccountKeyPath": "$GOOGLE_SERVICE_KEY_PATH"
+      },
+      "ios": {
+        "ascApiKeyPath": "$ASC_API_KEY_PATH",
+        "ascApiKeyIssuerId": "$ASC_API_KEY_ISSUER_ID",
+        "ascApiKeyId": "$ASC_API_KEY_ID",
+        "appleId": "$APPLE_ID",
+        "ascAppId": "$ASC_APP_ID",
+        "appleTeamId": "$APPLE_TEAM_ID"
+      }
+    },
+    "beta": {
+      "extends": "production",
+      "android": {
+        "track": "beta"
+      }
+    },
+    "internal": {
+      "extends": "production",
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
+  }
+}
