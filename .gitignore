@@ -35,21 +35,13 @@ documentation/~*.tmp
 .vagrant/
 
 code/.env
-app-configs/apps.json
-app-configs/projectOwner.json
-app-configs/*.projectOwner.json
+code/.env.local
 code/credentials.json
-code/app.config.js
-code/eas.json
 code/google-services.json
 code/build-*.aab
 code/build-*.apk
 code/build-*.ipa
 code/build-*.tar.gz
-
-scripts/*.sh
-app-configs/google-services.json
-app-configs/.env
-app-configs/*.env
 code/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
-app-configs/build.json
+
+code/app-configs/
