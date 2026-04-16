@@ -45,3 +45,4 @@ code/build-*.tar.gz
 code/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
 
 code/app-configs/
+builds/
