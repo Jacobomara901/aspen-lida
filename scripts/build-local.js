@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const CONFIG_DIR = path.resolve(__dirname, '..', 'code', 'app-configs');
 const CODE_DIR = path.resolve(__dirname, '..', 'code');
+const BUILDS_DIR = path.resolve(__dirname, '..', 'builds');
 
 const apps = JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, 'apps.json'), 'utf8'));
 const instances = Object.keys(apps);
@@ -42,22 +43,35 @@ async function main() {
   });
   if (!platform) process.exit(0);
 
-  console.log('\nLocal builds run synchronously and can take 20+ minutes each.');
-  console.log(`Artifacts are written to ${CODE_DIR}/\n`);
+  console.log('\nLocal builds run synchronously and can take 20+ minutes each.\n');
 
   const sites = slug === 'all' ? instances : [slug];
+  const platforms = platform === 'all' ? ['ios', 'android'] : [platform];
 
   for (const site of sites) {
-    console.log(`Building ${site} in ${channel} for ${platform} platform(s)...`);
+    const outputDir = path.join(BUILDS_DIR, site);
+    fs.mkdirSync(outputDir, { recursive: true });
 
-    execSync(
-      `eas build --platform ${platform} --profile ${channel} --local --non-interactive --verbose-logs --build-logger-level debug`,
-      {
-        cwd: CODE_DIR,
-        stdio: 'inherit',
-        env: { ...process.env, APP_ENV: site },
+    for (const p of platforms) {
+      const timestamp = Date.now();
+      const outputFile = path.join(outputDir, `${site}-${channel}-${p}-${timestamp}`);
+
+      console.log(`Building ${site} in ${channel} for ${p}...`);
+      console.log(`Output: ${outputFile}`);
+
+      try {
+        execSync(
+          `eas build --platform ${p} --profile ${channel} --local --non-interactive --verbose-logs --build-logger-level debug --output "${outputFile}"`,
+          {
+            cwd: CODE_DIR,
+            stdio: 'inherit',
+            env: { ...process.env, APP_ENV: site },
+          }
+        );
+      } catch {
+        console.error(`\nBuild failed for ${site} (${p}). Continuing with remaining builds.\n`);
       }
-    );
+    }
   }
 
   console.log('\nDone.');
