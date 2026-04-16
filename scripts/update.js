@@ -7,11 +7,26 @@ const { execSync } = require('child_process');
 const prompts = require('prompts');
 const fs = require('fs');
 
-const CONFIG_DIR = path.resolve(__dirname, '..', 'code', 'app-configs');
 const CODE_DIR = path.resolve(__dirname, '..', 'code');
+const CONFIG_DIR = path.resolve(CODE_DIR, 'app-configs');
 
 const apps = JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, 'apps.json'), 'utf8'));
+const eas = JSON.parse(fs.readFileSync(path.join(CODE_DIR, 'eas.json'), 'utf8'));
 const instances = Object.keys(apps);
+
+function easEnvironment(profile) {
+  const config = eas.build[profile];
+  if (config.environment) return config.environment;
+  if (config.extends) return easEnvironment(config.extends);
+  return 'production';
+}
+
+function setEasAppEnv(site, environment) {
+  execSync(
+    `eas env:create --name APP_ENV --value "${site}" --visibility plaintext --environment ${environment} --force --non-interactive`,
+    { cwd: CODE_DIR, stdio: 'inherit', env: { ...process.env, APP_ENV: site } }
+  );
+}
 
 async function main() {
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -57,9 +72,17 @@ async function main() {
   if (!platform) process.exit(0);
 
   const sites = slug === 'all' ? instances : [slug];
+  const environment = easEnvironment(channel);
 
   for (const site of sites) {
     console.log(`\nUpdating ${site} in ${channel} for ${platform} platform(s)...`);
+
+    const siteEnv = { ...process.env, APP_ENV: site };
+
+    if (!ota) {
+      console.log(`Setting APP_ENV=${site} on EAS environment "${environment}"...`);
+      setEasAppEnv(site, environment);
+    }
 
     const cmd = ota
       ? `eas update --branch "${branchName}" --message "${comment}" --platform ${platform}`
@@ -68,7 +91,7 @@ async function main() {
     execSync(cmd, {
       cwd: CODE_DIR,
       stdio: 'inherit',
-      env: { ...process.env, APP_ENV: site },
+      env: siteEnv,
     });
   }
 
