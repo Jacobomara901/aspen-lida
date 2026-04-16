@@ -1,0 +1,31 @@
+node_modules/
+.expo/**
+.expo-shared/**
+
+.vscode
+
+# IDE Files #
+.buildpath
+.project
+.classpath
+org.eclipse.*.prefs
+*.css.map
+.settings/
+out/
+.idea/**
+
+# OS generated files #
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+~$*.docx
+~$*.doc
+documentation/~*.tmp
+.vagrant/
+
+credentials.json
+
+ios
+android
+dist
