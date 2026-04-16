@@ -4,6 +4,7 @@
   },
   "build": {
     "production": {
+      "node": "22.16.0",
       "yarn": "1.22.19",
       "distribution": "store",
       "channel": "production",
