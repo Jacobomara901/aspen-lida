@@ -33,13 +33,7 @@ documentation/~*.tmp
 # Word Tempory File
 .vagrant/
 
-app-configs/apps.json
-app-configs/projectOwner.json
-app-configs/*.projectOwner.json
 code/credentials.json
-
-scripts/*.sh
-app-configs/google-services.json
 
 code/ios
 code/android
