@@ -12,7 +12,31 @@ const CODE_DIR = path.resolve(__dirname, '..', 'code');
 const BUILDS_DIR = path.resolve(__dirname, '..', 'builds');
 
 const apps = JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, 'apps.json'), 'utf8'));
+const eas = JSON.parse(fs.readFileSync(path.join(CODE_DIR, 'eas.json'), 'utf8'));
 const instances = Object.keys(apps);
+
+function easEnvironment(profile) {
+  const config = eas.build[profile];
+  if (config.environment) return config.environment;
+  if (config.extends) return easEnvironment(config.extends);
+  return 'production';
+}
+
+function pullGoogleServicesFile(slug, environment) {
+  const targetDir = path.join(CODE_DIR, '.eas', '.env');
+  const target = path.join(targetDir, 'GOOGLE_SERVICES_JSON');
+
+  console.log(`Pulling google-services.json from EAS (${environment})...`);
+  const output = execSync(
+    `eas env:get ${environment} --variable-name GOOGLE_SERVICES_JSON --format short --non-interactive`,
+    { cwd: CODE_DIR, env: { ...process.env, APP_ENV: slug }, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
+  );
+  const json = output.substring(output.indexOf('{'));
+  JSON.parse(json);
+  fs.mkdirSync(targetDir, { recursive: true });
+  fs.writeFileSync(target, json);
+  console.log(`Wrote ${target}`);
+}
 
 async function main() {
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -47,8 +71,10 @@ async function main() {
 
   const sites = slug === 'all' ? instances : [slug];
   const platforms = platform === 'all' ? ['ios', 'android'] : [platform];
+  const environment = easEnvironment(channel);
 
   for (const site of sites) {
+    pullGoogleServicesFile(site, environment);
     const outputDir = path.join(BUILDS_DIR, site);
     fs.mkdirSync(outputDir, { recursive: true });
 
