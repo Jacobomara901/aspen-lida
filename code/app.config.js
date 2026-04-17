@@ -217,6 +217,6 @@ module.exports = () => {
   const { app } = resolveInstance();
   const owner = resolveOwner(app.slug);
   const build = loadJSON(path.join(CONFIG_DIR, 'build.json'));
-  const version = loadJSON(path.join(CONFIG_DIR, 'version.json'));
+  const version = loadJSON(path.join(__dirname, '..', 'version.json'));
   return buildConfig(app, owner, build, version);
 };
