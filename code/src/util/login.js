@@ -100,6 +100,19 @@ export async function getUserProfile(data, user, pass) {
      return [];
 }
 
+function normalizeBrowseCategoriesAndHomeLinks(result) {
+     if (_.isArray(result)) {
+          return { browseCategories: result, homeScreenLinks: [] };
+     }
+     if (_.isObject(result) && (!_.isUndefined(result.browseCategories) || !_.isUndefined(result.homeScreenLinks))) {
+          return {
+               browseCategories: result.browseCategories ?? [],
+               homeScreenLinks: result.homeScreenLinks ?? [],
+          };
+     }
+     return null;
+}
+
 export async function getBrowseCategoriesAndHomeLinks(data, user, pass) {
      const postBody = new FormData();
      postBody.append('username', user['valueUser']);
@@ -115,15 +128,28 @@ export async function getBrowseCategoriesAndHomeLinks(data, user, pass) {
                LiDARequest: true,
           },
      });
-     const response =  await discovery.post('/SearchAPI?method=getHomeScreenFeed', postBody);
-     if (response.ok) {
-          if (response.data.result) {
-               return response.data.result;
+
+     const endpoints = [
+          '/SearchAPI?method=getHomeScreenFeed',
+          '/SearchAPI?method=getBrowseCategories',
+          '/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true',
+     ];
+
+     let lastResponse;
+     for (const endpoint of endpoints) {
+          lastResponse = await discovery.post(endpoint, postBody);
+          if (lastResponse.ok) {
+               const normalized = normalizeBrowseCategoriesAndHomeLinks(lastResponse.data?.result);
+               if (normalized) {
+                    return normalized;
+               }
           }
-     } else {
-          const error = getErrorMessage({ statusCode: response.status, problem: response.problem, sendToSentry: true });
-          popToast(error.title, error.message, 'error');
-          logErrorMessage(response);
      }
-     return [];
+
+     if (!lastResponse?.ok) {
+          const error = getErrorMessage({ statusCode: lastResponse?.status, problem: lastResponse?.problem, sendToSentry: true });
+          popToast(error.title, error.message, 'error');
+          logErrorMessage(lastResponse);
+     }
+     return { browseCategories: [], homeScreenLinks: [] };
 }

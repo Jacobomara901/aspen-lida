@@ -204,6 +204,35 @@ export function formatDiscoveryVersion(payload) {
      return LIBRARY.version ?? 'Unknown'; // if we couldn't parse the version (??), return the currently stored version or unknown
 }
 
+function normalizeHomeScreenFeed(result) {
+     if (_.isArray(result)) {
+          return { browseCategories: result, homeScreenLinks: [] };
+     }
+     if (_.isObject(result) && (!_.isUndefined(result.browseCategories) || !_.isUndefined(result.homeScreenLinks))) {
+          return {
+               browseCategories: result.browseCategories ?? [],
+               homeScreenLinks: result.homeScreenLinks ?? [],
+          };
+     }
+     return null;
+}
+
+async function tryLegacyHomeScreenFeed(discovery, postBody) {
+     const legacyEndpoints = [
+          '/SearchAPI?method=getBrowseCategories',
+          '/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true',
+     ];
+     for (const endpoint of legacyEndpoints) {
+          const response = await discovery.post(endpoint, postBody);
+          const normalized = response?.ok ? normalizeHomeScreenFeed(response?.data?.result) : null;
+          if (normalized) {
+               response.data.result = normalized;
+               return response;
+          }
+     }
+     return null;
+}
+
 /**
  * Fetch home screen feed items for the library
  **/
@@ -234,5 +263,12 @@ export async function getHomeScreenFeed(maxCat = 5, url = null) {
                },
           });
      }
-     return await discovery.post('/SearchAPI?method=getHomeScreenFeed', postBody);
+     const response = await discovery.post('/SearchAPI?method=getHomeScreenFeed', postBody);
+     const normalized = response?.ok ? normalizeHomeScreenFeed(response?.data?.result) : null;
+     if (normalized) {
+          response.data.result = normalized;
+          return response;
+     }
+     const legacy = await tryLegacyHomeScreenFeed(discovery, postBody);
+     return legacy ?? response;
 }
