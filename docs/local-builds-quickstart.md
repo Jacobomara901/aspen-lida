@@ -1,6 +1,6 @@
 # Local Builds — Quickstart
 
-Minimal steps to get `scripts/updater_local.sh` producing a build on a fresh macOS machine. See [`local-builds.md`](./local-builds.md) for the full explanation.
+Minimal steps to get `scripts/build-local.js` producing a build on a fresh macOS machine. See [`local-builds.md`](./local-builds.md) for the full explanation.
 
 ## 1. Install toolchains
 
@@ -39,18 +39,10 @@ npm install -g eas-cli
 eas login
 ```
 
-## 3. Copy the script template
+## 3. Run it
 
 ```bash
-cp script-templates/updater_local.sh scripts/updater_local.sh
-chmod +x scripts/updater_local.sh
-```
-
-## 4. Run it
-
-```bash
-cd scripts
-./updater_local.sh
+node scripts/build-local.js
 ```
 
 Pick channel → instance → platform. Build runs synchronously; artifact path is printed at the end.
