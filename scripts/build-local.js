@@ -80,7 +80,8 @@ async function main() {
 
     for (const p of platforms) {
       const timestamp = Date.now();
-      const outputFile = path.join(outputDir, `${site}-${channel}-${p}-${timestamp}`);
+      const ext = p === 'ios' ? 'ipa' : 'aab';
+      const outputFile = path.join(outputDir, `${site}-${channel}-${p}-${timestamp}.${ext}`);
 
       console.log(`Building ${site} in ${channel} for ${p}...`);
       console.log(`Output: ${outputFile}`);
