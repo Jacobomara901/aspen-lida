@@ -87,7 +87,7 @@ async function main() {
 
       try {
         execSync(
-          `eas build --platform ${p} --profile ${channel} --local --non-interactive --verbose-logs --build-logger-level debug --output "${outputFile}"`,
+          `eas build --platform ${p} --profile ${channel} --local --non-interactive --output "${outputFile}"`,
           {
             cwd: CODE_DIR,
             stdio: 'inherit',
