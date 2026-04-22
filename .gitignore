@@ -34,15 +34,8 @@ documentation/~*.tmp
 # Word Tempory File
 .vagrant/
 
-code/.env
-code/.env.local
-code/credentials.json
-code/google-services.json
-code/build-*.aab
-code/build-*.apk
-code/build-*.ipa
-code/build-*.tar.gz
-code/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
-
-code/app-configs/
+**/app-configs/
+.env*
 builds/
+code/credentials.json
+code/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
