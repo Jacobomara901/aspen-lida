@@ -1,8 +1,6 @@
 # Building Aspen LiDA Locally
 
-This guide covers how to build Aspen LiDA on your own machine instead of using Expo's EAS cloud build servers, via the `scripts/updater_local.sh` wrapper.
-
-> `scripts/` is gitignored. Copy the template the first time you set up: `cp script-templates/updater_local.sh scripts/updater_local.sh && chmod +x scripts/updater_local.sh`. Same convention as `updater.sh`.
+This guide covers how to build Aspen LiDA on your own machine instead of using Expo's EAS cloud build servers, via the `scripts/build-local.js` wrapper.
 
 ## Prerequisites
 
@@ -12,7 +10,7 @@ This guide covers how to build Aspen LiDA on your own machine instead of using E
 - **JDK 17**, Android **cmdline-tools**, **platform-tools**, **platforms;android-35**, **build-tools;35.0.0**, **NDK 27.1.12297006** (Android — see install steps below)
 - **EAS CLI**: `npm install -g eas-cli`
 - Authenticated with Expo: `eas login`
-- The usual repo prereqs (`jq`, `node`, `yarn`) already required by `updater.sh`
+- The usual repo prereqs (`node`, `yarn`) already required by `scripts/update.js`
 
 ### iOS toolchain install (one-off)
 
@@ -55,23 +53,21 @@ Add the four `export` lines to `~/.zshrc` so they persist. Verify with `java -ve
 
 > Note: there's also a stale `~/Library/Android/sdk` from a prior Android Studio install. It only contains an older NDK and isn't on the path — leave it or `rm -rf` it; the new SDK lives entirely under `/opt/homebrew/share/android-commandlinetools`.
 
-## How it differs from `updater.sh`
+## How it differs from `scripts/update.js`
 
-`updater.sh` runs:
+`scripts/update.js` runs:
 
 ```bash
 eas build --platform <platform> --profile <channel> --no-wait
 ```
 
-which queues a build on Expo's servers. `updater_local.sh` runs the same pipeline, but with:
+which queues a build on Expo's servers. `scripts/build-local.js` runs the same pipeline, but with:
 
 ```bash
 eas build --platform <platform> --profile <channel> --local --non-interactive
 ```
 
-The `--local` flag executes the build pipeline on this machine. Builds run synchronously (no `--no-wait`) and one instance at a time when you select `all`. The OTA update path is **not** included in `updater_local.sh` — OTA updates don't involve a native build, so keep using `updater.sh` for those.
-
-Everything else (`copyConfig.js`, `updateConfig.js`, the `sed` substitution into `eas.json`) is unchanged.
+The `--local` flag executes the build pipeline on this machine. Builds run synchronously (no `--no-wait`) and one instance at a time when you select `all`. The OTA update path is **not** included in `build-local.js` — OTA updates don't involve a native build, so keep using `scripts/update.js` for those.
 
 ## Credentials & secrets
 
@@ -83,7 +79,7 @@ Inspect or regenerate them with `eas credentials`.
 
 ### API keys — pulled from EAS environments
 
-The `API_KEY_1..5` values used by `code/src/util/apiAuth.js` are stored as **secret env vars in EAS environments**, not in the local `app-configs/.env` file. There are three EAS environments — `production`, `preview`, `development` — and the build profiles in `app-config-templates/eas.json` are linked to them via the `environment` field:
+The `API_KEY_1..5` values used by `code/src/util/apiAuth.js` are stored as **secret env vars in EAS environments**. There are three EAS environments — `production`, `preview`, `development` — and the build profiles in `code/eas.json` are linked to them via the `environment` field:
 
 | Build profile | EAS environment |
 | ------------- | --------------- |
@@ -92,11 +88,11 @@ The `API_KEY_1..5` values used by `code/src/util/apiAuth.js` are stored as **sec
 | alpha         | preview         |
 | development   | development     |
 
-Because the profiles declare an `environment`, EAS pulls those env vars into the build context for **both cloud and `--local` builds**.
+Because the profiles declare an `environment`, EAS pulls those env vars into the build context for **both cloud and `--local` builds**. `apiAuth.js` reads them via `import { API_KEY_1 } from '@env'` (react-native-dotenv) at bundle time, with a `process.env.API_KEY_*` fallback when the `@env` import is empty.
 
-`code/preinstall.js` runs as the `eas-build-pre-install` lifecycle hook and writes the `API_KEY_*` values from `process.env` into `code/.env` so that `react-native-dotenv` (used by `import { API_KEY_1 } from '@env'`) can pick them up at bundle time. If any key is missing from the environment it falls back to whatever `.env` was shipped with the project.
+For local dev (`scripts/start.js`), the start script runs `eas env:pull` to materialise the keys into `code/.env` so the bundler picks them up. If you're offline or not logged in to EAS, create `code/.env` manually.
 
-`app-configs/.env` is no longer the source of truth for API keys — the file is left in place but unused. To rotate a key, update it in the relevant EAS environment via `eas env:create --environment <env>` (or the dashboard) and rebuild.
+To rotate a key, update it in the relevant EAS environment via `eas env:create --environment <env>` (or the dashboard) and rebuild.
 
 List what's currently set:
 
@@ -107,22 +103,21 @@ eas env:list --environment production   # or preview / development
 
 ### `google-services.json`
 
-`app-configs/google-services.json` is checked into the repo and `scripts/updateConfig.js` writes the path `'../app-configs/google-services.json'` into `code/app.config.js`.
+`code/app.config.js` resolves the google-services file at Expo-config evaluation time via `resolveGoogleServicesFile(slug)`: it prefers `process.env.GOOGLE_SERVICES_JSON` (set by EAS on cloud and `--local` builds when `GOOGLE_SERVICES_JSON` is a file-type env var in the build's environment), falling back to `code/app-configs/<slug>.google-services.json` or `code/app-configs/google-services.json`.
 
-`preinstall.js` rewrites that path to `process.env.GOOGLE_SERVICES_JSON` **only if** the env var is set — i.e. on cloud builds where EAS materializes the file secret. On local builds the env var is unset, so the local path is left in place and used as-is. No manual file placement needed.
+`scripts/build-local.js` pulls the file fresh from EAS into `code/.eas/.env/GOOGLE_SERVICES_JSON` before each local build, so the env-var path is always populated.
 
 ### Submit credentials — only if you `eas submit`
 
-`apps.json` has per-instance `googleServiceKeyPath` and `ascApiKey*` fields that `updateConfig.js` substitutes into the `submit` block of `eas.json`. These are only consulted by `eas submit`, not by `eas build --local`. If you only want a local build artifact, ignore them.
+`code/eas.json`'s `submit` block references credentials via `$VAR` placeholders (`$ASC_API_KEY_PATH`, `$APPLE_ID`, etc.) that EAS resolves from the build environment. These are only consulted by `eas submit`, not by `eas build --local`. If you only want a local build artifact, ignore them. See `app-config-templates/README.md` for the full list.
 
 ## Running a local build
 
 ```bash
-cd scripts
-./updater_local.sh
+node scripts/build-local.js
 ```
 
-You'll be prompted (same as `updater.sh`) for channel → instance → platform. The script then runs the build synchronously. EAS prints the artifact path at the end.
+You'll be prompted (same as `scripts/update.js`) for channel → instance → platform. The script then runs the build synchronously. EAS prints the artifact path at the end.
 
 | Platform | Profile             | Output          |
 | -------- | ------------------- | --------------- |
@@ -137,9 +132,9 @@ You'll be prompted (same as `updater.sh`) for channel → instance → platform.
 
 Run `eas credentials` to download or regenerate signing material for the platform you're building.
 
-### `Missing API key env vars: ...` in preinstall
+### API keys missing at bundle time
 
-EAS env vars weren't pulled. Check that the build profile in `app-config-templates/eas.json` has an `environment` field and that the corresponding environment exists with `eas env:list --environment <env>`.
+EAS env vars weren't pulled. Check that the build profile in `code/eas.json` has an `environment` field and that the corresponding environment exists with `eas env:list --environment <env>`.
 
 ### `iOS X.Y is not installed` / `Unable to find a destination matching ... generic:1, platform:iOS`
 
