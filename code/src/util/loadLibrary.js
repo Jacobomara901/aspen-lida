@@ -204,13 +204,40 @@ export function formatDiscoveryVersion(payload) {
      return LIBRARY.version ?? 'Unknown'; // if we couldn't parse the version (??), return the currently stored version or unknown
 }
 
+export function mapLegacyBrowseCategory(category) {
+     if (!_.isObject(category) || !_.isUndefined(category.textId)) {
+          return category;
+     }
+     const legacyEvents = _.isArray(category.events) ? category.events : [];
+     const legacyLists = _.isArray(category.lists) ? category.lists : [];
+     const baseRecords = _.isArray(category.records) ? category.records : [];
+     const mappedEvents = legacyEvents.map((item) => ({
+          id: item.sourceId ?? item.id,
+          title_display: item.title_display ?? item.title,
+          source: 'Event',
+     }));
+     const mappedLists = legacyLists.map((item) => ({
+          id: item.sourceId ?? item.id,
+          title_display: item.title_display ?? item.title,
+          source: 'List',
+     }));
+     return {
+          ...category,
+          textId: category.key,
+          label: category.title,
+          sourceListId: category.sourceListId ?? category.listId ?? category.sourceId,
+          records: [...baseRecords, ...mappedLists, ...mappedEvents],
+     };
+}
+
 function normalizeHomeScreenFeed(result) {
      if (_.isArray(result)) {
-          return { browseCategories: result, homeScreenLinks: [] };
+          return { browseCategories: result.map(mapLegacyBrowseCategory), homeScreenLinks: [] };
      }
      if (_.isObject(result) && (!_.isUndefined(result.browseCategories) || !_.isUndefined(result.homeScreenLinks))) {
+          const browseCategories = _.isArray(result.browseCategories) ? result.browseCategories.map(mapLegacyBrowseCategory) : [];
           return {
-               browseCategories: result.browseCategories ?? [],
+               browseCategories,
                homeScreenLinks: result.homeScreenLinks ?? [],
           };
      }

@@ -8,6 +8,7 @@ import _ from 'lodash';
 import { popToast } from '../components/loadError';
 import { createAuthTokens, getErrorMessage, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS, LOGIN_DATA } from './globals';
+import { mapLegacyBrowseCategory } from './loadLibrary';
 import { PATRON } from './loadPatron';
 import { logDebugMessage, logErrorMessage } from './logging';
 
@@ -102,11 +103,12 @@ export async function getUserProfile(data, user, pass) {
 
 function normalizeBrowseCategoriesAndHomeLinks(result) {
      if (_.isArray(result)) {
-          return { browseCategories: result, homeScreenLinks: [] };
+          return { browseCategories: result.map(mapLegacyBrowseCategory), homeScreenLinks: [] };
      }
      if (_.isObject(result) && (!_.isUndefined(result.browseCategories) || !_.isUndefined(result.homeScreenLinks))) {
+          const browseCategories = _.isArray(result.browseCategories) ? result.browseCategories.map(mapLegacyBrowseCategory) : [];
           return {
-               browseCategories: result.browseCategories ?? [],
+               browseCategories,
                homeScreenLinks: result.homeScreenLinks ?? [],
           };
      }
