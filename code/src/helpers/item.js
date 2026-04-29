@@ -283,9 +283,7 @@ export const getDueDate = (date) => {
      const { language } = React.useContext(LanguageContext);
      const {textColor} = React.useContext(ThemeContext);
      if (date && date !== 0) {
-          //offset is in minutes we multiply 60 to get seconds
-          const timezoneOffset = new Date().getTimezoneOffset() * 60;
-          const dueDate = moment.unix(date - timezoneOffset);
+          const dueDate = moment.unix(date);
           const itemDueOn = moment(dueDate).format('MMM D, YYYY');
           return (
                <Text fontSize="$xs" color={textColor}>
