@@ -232,8 +232,6 @@ const DisplayLocation = (data) => {
           });
      };
 
-     console.log(key + ':' + location.locationImage);
-
      return (
           <>
                <Pressable onPress={goToLocation}>
