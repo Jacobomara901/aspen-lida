@@ -54,16 +54,6 @@ export const AllLocations = () => {
                }
                setLoading(false);
           },
-          onSettle: (data) => {
-               if (sort === 'distance') {
-                    const tmpSortedLocations = _.sortBy(data, ['distance', 'displayName']);
-                    setSortedLocations(tmpSortedLocations);
-               } else {
-                    const tmpSortedLocations = _.sortBy(data, ['displayName']);
-                    setSortedLocations(tmpSortedLocations);
-               }
-               setLoading(false);
-          },
           onError: (error) => {
                logDebugMessage("Error fetching locations");
                logErrorMessage(error);
