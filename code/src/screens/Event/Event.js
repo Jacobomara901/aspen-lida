@@ -209,9 +209,11 @@ const DisplayEvent = (payload) => {
                     {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
                     <HStack justifyContent="space-between" space="sm">
                          {event.canAddToList ? <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" /> : null}
-                         <Button bgColor={theme['colors']['coolGray']['200']} w={event.canAddToList ? '49%' : '100%'} onPress={() => openLink()}>
-                              <ButtonText color={theme['colors']['coolGray']['800']}>{getTermFromDictionary(language, 'more_info')}</ButtonText>
-                         </Button>
+                         {source !== 'aspenEvents' && event.url ? (
+                              <Button bgColor={theme['colors']['coolGray']['200']} w={event.canAddToList ? '49%' : '100%'} onPress={() => openLink()}>
+                                   <ButtonText color={theme['colors']['coolGray']['800']}>{getTermFromDictionary(language, 'more_info')}</ButtonText>
+                              </Button>
+                         ) : null}
                     </HStack>
                     {getDescription(event.description)}
                     <HStack justifyContent="space-between" space="lg" mt="$5" flexWrap="wrap">
