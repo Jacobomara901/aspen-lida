@@ -148,7 +148,7 @@ export const Settings_PickupLocations = () => {
 						)}
 						<SelectIcon mr="$3" as={ChevronDownIcon} color={textColor} />
 					</SelectTrigger>
-					<SelectPortal>
+					<SelectPortal useRNModal={true}>
 						<SelectBackdrop />
 						<SelectContent
 							bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}
@@ -157,6 +157,7 @@ export const Settings_PickupLocations = () => {
 							<SelectDragIndicatorWrapper>
 								<SelectDragIndicator />
 							</SelectDragIndicatorWrapper>
+							<SelectScrollView>
 								{locations.map((availableLocations, index) => {
 									if (availableLocations.code === location) {
 										return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} sx={{ _text: { color: theme['colors']['tertiary']['500-text'] } }} />;
@@ -165,6 +166,7 @@ export const Settings_PickupLocations = () => {
 										_text: { color: textColor }
 									}} />;
 								})}
+							</SelectScrollView>
 						</SelectContent>
 					</SelectPortal>
 				</Select>
@@ -199,6 +201,7 @@ export const Settings_PickupLocations = () => {
 								<SelectDragIndicatorWrapper>
 									<SelectDragIndicator />
 								</SelectDragIndicatorWrapper>
+								<SelectScrollView>
 									{locations.map((availableLocations, index) => {
 										if (availableLocations.code === location1Id) {
 											return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} sx={{ _text: { color: theme['colors']['tertiary']['500-text'] } }} />;
@@ -207,6 +210,7 @@ export const Settings_PickupLocations = () => {
 											_text: { color: textColor }
 										}} />;
 									})}
+								</SelectScrollView>
 							</SelectContent>
 						</SelectPortal>
 					</Select>
@@ -230,7 +234,7 @@ export const Settings_PickupLocations = () => {
 							)}
 							<SelectIcon mr="$3" as={ChevronDownIcon} color={textColor} />
 						</SelectTrigger>
-						<SelectPortal>
+						<SelectPortal useRNModal={true}>
 							<SelectBackdrop />
 							<SelectContent
 								bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}
@@ -239,6 +243,7 @@ export const Settings_PickupLocations = () => {
 								<SelectDragIndicatorWrapper>
 									<SelectDragIndicator />
 								</SelectDragIndicatorWrapper>
+								<SelectScrollView>
 									{locations.map((availableLocations, index) => {
 										if (availableLocations.code === location2Id) {
 											return <SelectItem label={availableLocations.name} value={availableLocations.code} key={index} bgColor={theme['colors']['tertiary']['300']} sx={{ _text: { color: theme['colors']['tertiary']['500-text'] } }} />;
@@ -247,6 +252,7 @@ export const Settings_PickupLocations = () => {
 											_text: { color: textColor }
 										}} />;
 									})}
+								</SelectScrollView>
 							</SelectContent>
 						</SelectPortal>
 					</Select>
