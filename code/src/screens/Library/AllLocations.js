@@ -38,12 +38,13 @@ export const AllLocations = () => {
           initialData: locations,
           onSuccess: (data) => {
                if(data.ok) {
-                    updateLocations(data.data.result.locations);
+                    const newLocations = data.data.result.locations;
+                    updateLocations(newLocations);
                     if (sort === 'distance') {
-                         const tmpSortedLocations = _.sortBy(data, ['distance', 'displayName']);
+                         const tmpSortedLocations = _.sortBy(newLocations, ['distance', 'displayName']);
                          setSortedLocations(tmpSortedLocations);
                     } else {
-                         const tmpSortedLocations = _.sortBy(data, ['displayName']);
+                         const tmpSortedLocations = _.sortBy(newLocations, ['displayName']);
                          setSortedLocations(tmpSortedLocations);
                     }
                } else {
