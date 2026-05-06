@@ -378,7 +378,7 @@ export const DrawerContent = () => {
                logDebugMessage("Finished pickup_locations query, setting data");
                if(data.ok) {
                     const pickupLocations = formatPickupLocations(data.data.result);
-                    updatePickupLocations(pickupLocations.pickupLocations);
+                    updatePickupLocations(pickupLocations.locations);
                     updatePreferredPickupLocationIsValid(pickupLocations.preferredPickupLocationIsValid);
                     updatePreferredPickupLocationWarning(pickupLocations.preferredPickupLocationWarning);
                     logDebugMessage("Finished pickup_locations query, done setting data");
