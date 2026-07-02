@@ -140,6 +140,10 @@ jobs:
         with:
           xcode-version: '26.0'
 
+      - name: 📲 Install iOS platform for selected Xcode
+        if: matrix.platform == 'ios'
+        run: sudo xcodebuild -downloadPlatform iOS
+
       - name: 📁 Generate instance config
         working-directory: ./scripts
         run: |
