@@ -7,8 +7,6 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@expo/config-plugins": "~10.1.1",
-    "@expo/prebuild-config": "~9.0.0",
     "@expo/vector-icons": "^14.1.0",
     "@gluestack-style/animation-resolver": "^1.0.4",
     "@gluestack-style/react": "^1.0.57",
