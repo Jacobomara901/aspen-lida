@@ -48,3 +48,4 @@ code/%ProgramData%/Microsoft/Windows/UUS/State/_active.uusver
 app-configs/build.json
 
 local.properties
+app-configs/*.p8
