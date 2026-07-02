@@ -154,8 +154,7 @@ jobs:
           node -e '
             const fs = require("fs");
             const eas = JSON.parse(fs.readFileSync("eas.json", "utf8"));
-            const gsPath = "../app-configs/google-services.json";
-            if (!fs.existsSync(gsPath)) throw new Error(gsPath + " is missing — check the LIDA_GOOGLE_SERVICES_JSON secret");
+            const gsPath = "./google-services.json";
             if (!eas.build?.production?.env?.GOOGLE_SERVICES_JSON) throw new Error("eas.json build.production.env.GOOGLE_SERVICES_JSON not found — template shape changed");
             for (const profile of Object.values(eas.build)) {
               if (profile.env?.GOOGLE_SERVICES_JSON) profile.env.GOOGLE_SERVICES_JSON = gsPath;
@@ -183,6 +182,9 @@ jobs:
         env:
           APP_ENV: ${{ env.INSTANCE }}
           NODE_OPTIONS: --max_old_space_size=8192
+          LIDA_CI: 1
+          LIDA_ENV_B64: ${{ secrets.LIDA_ENV_FILE }}
+          LIDA_GOOGLE_SERVICES_B64: ${{ secrets.LIDA_GOOGLE_SERVICES_JSON }}
         run: |
           npx eas-cli build --platform ${{ matrix.platform }} --profile "$PROFILE" --local --non-interactive --output "./$ARTIFACT"
 
