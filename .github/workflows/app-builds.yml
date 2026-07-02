@@ -142,12 +142,18 @@ jobs:
           sed -i.bak "s/{{APP_ENV}}/$INSTANCE/g" ../code/eas.json
           rm ../code/eas.json.bak
 
-      - name: 🧹 Strip unresolved submit credentials
+      - name: 🧹 Patch eas.json for CI
         working-directory: ./code
         run: |
           node -e '
             const fs = require("fs");
             const eas = JSON.parse(fs.readFileSync("eas.json", "utf8"));
+            const gsPath = "../app-configs/google-services.json";
+            if (!fs.existsSync(gsPath)) throw new Error(gsPath + " is missing — check the LIDA_GOOGLE_SERVICES_JSON secret");
+            if (!eas.build?.production?.env?.GOOGLE_SERVICES_JSON) throw new Error("eas.json build.production.env.GOOGLE_SERVICES_JSON not found — template shape changed");
+            for (const profile of Object.values(eas.build)) {
+              if (profile.env?.GOOGLE_SERVICES_JSON) profile.env.GOOGLE_SERVICES_JSON = gsPath;
+            }
             for (const profile of Object.values(eas.submit || {})) {
               for (const platform of ["ios", "android"]) {
                 const block = profile[platform];
