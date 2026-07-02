@@ -1,0 +1,203 @@
+name: App Builds
+
+on:
+  push:
+    branches:
+      - deploy
+    paths:
+      - 'deploy/build.json'
+  workflow_dispatch:
+    inputs:
+      instance:
+        description: 'Instance to build (key in apps.json)'
+        required: true
+        default: 'LiDA-Europe'
+      profile:
+        description: 'EAS build profile'
+        type: choice
+        options:
+          - production
+          - beta
+          - internal
+        default: production
+      platform:
+        description: 'Platform(s) to build'
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+        default: all
+      submit:
+        description: 'Submit to app stores after building'
+        type: boolean
+        default: true
+
+concurrency:
+  group: app-builds-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  INSTANCE: ${{ inputs.instance || 'LiDA-Europe' }}
+  PROFILE: ${{ inputs.profile || 'production' }}
+
+jobs:
+  validate-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔐 Validate required secrets
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          LIDA_APPS_JSON: ${{ secrets.LIDA_APPS_JSON }}
+          LIDA_PROJECT_OWNER_JSON: ${{ secrets.LIDA_PROJECT_OWNER_JSON }}
+          LIDA_ENV_FILE: ${{ secrets.LIDA_ENV_FILE }}
+          LIDA_GOOGLE_SERVICES_JSON: ${{ secrets.LIDA_GOOGLE_SERVICES_JSON }}
+          LIDA_PLAY_SERVICE_ACCOUNT: ${{ secrets.LIDA_PLAY_SERVICE_ACCOUNT }}
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          missing=0
+          check_secret () {
+            if [ -z "$2" ]; then
+              echo "::error title=Missing Secret::$1 is not set"
+              missing=1
+            fi
+          }
+          warn_secret () {
+            if [ -z "$2" ]; then
+              echo "::warning title=Missing Optional Secret::$1 is not set"
+            fi
+          }
+          check_secret "EXPO_TOKEN" "$EXPO_TOKEN"
+          check_secret "LIDA_APPS_JSON" "$LIDA_APPS_JSON"
+          check_secret "LIDA_PROJECT_OWNER_JSON" "$LIDA_PROJECT_OWNER_JSON"
+          check_secret "LIDA_ENV_FILE" "$LIDA_ENV_FILE"
+          check_secret "LIDA_GOOGLE_SERVICES_JSON" "$LIDA_GOOGLE_SERVICES_JSON"
+          warn_secret "LIDA_PLAY_SERVICE_ACCOUNT" "$LIDA_PLAY_SERVICE_ACCOUNT"
+          warn_secret "EXPO_APPLE_APP_SPECIFIC_PASSWORD" "$EXPO_APPLE_APP_SPECIFIC_PASSWORD"
+          warn_secret "SLACK_WEBHOOK" "$SLACK_WEBHOOK"
+
+          if [ "$missing" -eq 1 ]; then
+            echo "One or more required secrets are missing. Failing workflow."
+            exit 1
+          fi
+          echo "All required secrets are present."
+
+  build-and-deploy:
+    needs: validate-secrets
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(inputs.platform == 'android' && '["android"]' || inputs.platform == 'ios' && '["ios"]' || '["android","ios"]') }}
+    runs-on: ${{ matrix.platform == 'ios' && 'macos-26' || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
+      ARTIFACT: ${{ matrix.platform == 'ios' && 'app-build.ipa' || 'app-build.aab' }}
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Restore app configs from secrets
+        env:
+          LIDA_APPS_JSON: ${{ secrets.LIDA_APPS_JSON }}
+          LIDA_PROJECT_OWNER_JSON: ${{ secrets.LIDA_PROJECT_OWNER_JSON }}
+          LIDA_ENV_FILE: ${{ secrets.LIDA_ENV_FILE }}
+          LIDA_GOOGLE_SERVICES_JSON: ${{ secrets.LIDA_GOOGLE_SERVICES_JSON }}
+          LIDA_PLAY_SERVICE_ACCOUNT: ${{ secrets.LIDA_PLAY_SERVICE_ACCOUNT }}
+        run: |
+          echo "$LIDA_APPS_JSON" | base64 --decode > app-configs/apps.json
+          echo "$LIDA_PROJECT_OWNER_JSON" | base64 --decode > app-configs/projectOwner.json
+          echo "$LIDA_ENV_FILE" | base64 --decode > app-configs/.env
+          echo "$LIDA_GOOGLE_SERVICES_JSON" | base64 --decode > app-configs/google-services.json
+          cp deploy/build.json app-configs/build.json
+          if [ -n "$LIDA_PLAY_SERVICE_ACCOUNT" ]; then
+            echo "$LIDA_PLAY_SERVICE_ACCOUNT" | base64 --decode > code/GOOGLE_SERVICES_JSON
+          fi
+          echo "App configs restored"
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: yarn
+          cache-dependency-path: code/yarn.lock
+
+      - name: 🔧 Enable Corepack
+        run: corepack enable
+
+      - name: ☕ Setup JDK 17
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 📁 Generate instance config
+        working-directory: ./scripts
+        run: |
+          node copyConfig.js --instance="$INSTANCE"
+          node updateConfig.js --instance="$INSTANCE" --env="$PROFILE"
+          sed -i.bak "s/{{APP_ENV}}/$INSTANCE/g" ../code/eas.json
+          rm ../code/eas.json.bak
+
+      - name: 🧹 Strip unresolved submit credentials
+        working-directory: ./code
+        run: |
+          node -e '
+            const fs = require("fs");
+            const eas = JSON.parse(fs.readFileSync("eas.json", "utf8"));
+            for (const profile of Object.values(eas.submit || {})) {
+              for (const platform of ["ios", "android"]) {
+                const block = profile[platform];
+                if (!block) continue;
+                for (const [key, value] of Object.entries(block)) {
+                  if (typeof value !== "string") continue;
+                  if (value.startsWith("$") || value === "0" || value === "not_needed") delete block[key];
+                }
+                if (block.serviceAccountKeyPath && !fs.existsSync(block.serviceAccountKeyPath)) delete block.serviceAccountKeyPath;
+              }
+            }
+            fs.writeFileSync("eas.json", JSON.stringify(eas, null, 2));
+          '
+
+      - name: 📦 Install dependencies
+        working-directory: ./code
+        run: yarn install
+
+      - name: 📱 Build ${{ env.INSTANCE }} for ${{ matrix.platform }}
+        working-directory: ./code
+        env:
+          APP_ENV: ${{ env.INSTANCE }}
+          NODE_OPTIONS: --max_old_space_size=8192
+        run: |
+          npx eas-cli build --platform ${{ matrix.platform }} --profile "$PROFILE" --local --non-interactive --output "./$ARTIFACT"
+
+      - name: 📦 Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.INSTANCE }}-${{ matrix.platform }}
+          path: code/${{ env.ARTIFACT }}
+          retention-days: 60
+
+      - name: 🚀 Submit to ${{ matrix.platform }} store
+        if: github.event_name == 'push' || inputs.submit
+        working-directory: ./code
+        env:
+          APP_ENV: ${{ env.INSTANCE }}
+        run: |
+          npx eas-cli submit --platform ${{ matrix.platform }} --profile "$PROFILE" --path "./$ARTIFACT" --non-interactive
+
+  notify-slack:
+    needs: build-and-deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📢 Notify build completion
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: ${{ needs.build-and-deploy.result == 'success' && 'good' || 'danger' }}
+          SLACK_TITLE: 'Build results for ${{ github.repository }}'
+          SLACK_MESSAGE: ${{ needs.build-and-deploy.result == 'success' && 'Builds completed successfully ✅' || format('Builds finished with status {0} ❌', needs.build-and-deploy.result) }}
