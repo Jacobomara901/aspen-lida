@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Platform } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -71,6 +72,7 @@ export const MyCampaigns = () => {
 	const { library } = React.useContext(LibrarySystemContext);
 	const { language } = React.useContext(LanguageContext);
 	const { theme, textColor, colorMode } = React.useContext(ThemeContext);
+	const insets = useSafeAreaInsets();
 
 	React.useEffect(() => {
 		queryClient.invalidateQueries(['all_campaigns']);
@@ -531,7 +533,7 @@ export const MyCampaigns = () => {
 		return (
 			<Actionsheet isOpen={showActionSheet} onClose={handleCloseActions}>
 				<ActionsheetBackdrop />
-				<ActionsheetContent>
+				<ActionsheetContent pb={Platform.OS === 'android' ? insets.bottom + 16 : '$4'}>
 					<ActionsheetDragIndicatorWrapper>
 						<ActionsheetDragIndicator />
 					</ActionsheetDragIndicatorWrapper>
@@ -604,7 +606,7 @@ export const MyCampaigns = () => {
 					</SelectTrigger>
 					<SelectPortal>
 						<SelectBackdrop />
-						<SelectContent>
+						<SelectContent pb={Platform.OS === 'android' ? insets.bottom + 16 : '$4'}>
 							<SelectDragIndicatorWrapper>
 								<SelectDragIndicator />
 							</SelectDragIndicatorWrapper>
