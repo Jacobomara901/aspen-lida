@@ -1,4 +1,4 @@
-import { Updates } from '@expo/config-plugins';
+import { Updates } from 'expo/config-plugins';
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
