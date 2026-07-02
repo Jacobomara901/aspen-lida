@@ -134,6 +134,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: 🛠 Select Xcode 26.0
+        if: matrix.platform == 'ios'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.0'
+
       - name: 📁 Generate instance config
         working-directory: ./scripts
         run: |
