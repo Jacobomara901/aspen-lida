@@ -89,9 +89,9 @@ export async function fetchNearbyLibrariesFromGreenhouse(toast) {
      });
 
      if (response.ok) {
-          const data = response.data?.result;
+          const data = response.data?.result ?? response.data;
 
-          let libraries = method == 'getLibraries' ? data.libraries : Object.values(data.library ?? {});
+          let libraries = method == 'getLibraries' ? data?.libraries : Object.values(data?.library ?? {});
 
           libraries = [...(libraries ?? [])].sort((a, b) => {
                if (a.distance !== b.distance) return (a.distance ?? 0) - (b.distance ?? 0);
@@ -99,7 +99,7 @@ export async function fetchNearbyLibrariesFromGreenhouse(toast) {
                return (a.librarySystem ?? '').localeCompare(b.librarySystem ?? '');
           });
 
-          let showSelectLibrary = data.count > 1;
+          let showSelectLibrary = data?.count > 1;
 
           if (isBranded) {
                logDebugMessage("Getting branded app settings");
@@ -138,7 +138,8 @@ export async function fetchAllLibrariesFromGreenhouse() {
      });
 
      if (response.ok) {
-          const libraries = [...(response.data.libraries ?? [])].sort((a, b) => {
+          const allLibrariesData = response.data?.result ?? response.data;
+          const libraries = [...(allLibrariesData?.libraries ?? [])].sort((a, b) => {
                if (a.name !== b.name) return (a.name ?? '').localeCompare(b.name ?? '');
                return (a.librarySystem ?? '').localeCompare(b.librarySystem ?? '');
           });
