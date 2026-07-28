@@ -247,6 +247,10 @@ export const LoginScreen = () => {
           }
      };
 
+     if (isLoading) {
+          return <SplashScreen />;
+     }
+
      const loginScreenContent = (
           <SafeAreaView flex={1}>
                <Box px="$5" h="$full" alignItems="center" justifyContent="center">
@@ -262,13 +266,13 @@ export const LoginScreen = () => {
                          </ButtonGroup>
                          {enableSelfRegistration ? (
                               <Button mt="$3" variant="link" onPress={openSelfRegistration}>
-                                   <ButtonText color={theme.tokens.colors.primary['500']}>{getTermFromDictionary('en', 'register_for_a_library_card')}</ButtonText>
+                                   <ButtonText color={theme?.tokens?.colors?.primary?.['500']}>{getTermFromDictionary('en', 'register_for_a_library_card')}</ButtonText>
                               </Button>
                          ) : null}
                          {isCommunity && Platform.OS !== 'android' ? (
                               <Button mt="$5" size="xs" variant="link">
-                                   <ButtonIcon mr="$1" as={Ionicons} name="navigate-circle-outline" bg={theme['tokens']['colors']['tertiary']['500']} />
-                                   <ButtonText color={theme['tokens']['colors']['tertiary']['500-text']}>{getTermFromDictionary('en', 'reset_geolocation')}</ButtonText>
+                                   <ButtonIcon mr="$1" as={Ionicons} name="navigate-circle-outline" bg={theme?.tokens?.colors?.tertiary?.['500']} />
+                                   <ButtonText color={theme?.tokens?.colors?.tertiary?.['500-text']}>{getTermFromDictionary('en', 'reset_geolocation')}</ButtonText>
                               </Button>
                          ) : null}
                          <Center>
@@ -299,10 +303,6 @@ export const LoginScreen = () => {
                </Box>
           </SafeAreaView>
      );
-
-     if (isLoading) {
-          return <SplashScreen />;
-     }
 
      logDebugMessage("Loading Login page colorMode = " + colorMode );
      return loginScreenContent;
