@@ -181,10 +181,10 @@ export const MyCheckout = (props) => {
 
                                              if (result?.confirmRenewalFee && result.confirmRenewalFee) {
                                                   setRenewConfirmationResponse({
-                                                       message: result.api.message,
-                                                       title: result.api.title,
+                                                       message: result.message ?? result.api?.message,
+                                                       title: result.title ?? result.api?.title,
                                                        confirmRenewalFee: result.confirmRenewalFee ?? false,
-                                                       action: result.api.action,
+                                                       action: result.action ?? result.api?.action,
                                                        recordId: record ?? null,
                                                        barcode: checkout.barcode ?? null,
                                                        source: checkout.source ?? null,

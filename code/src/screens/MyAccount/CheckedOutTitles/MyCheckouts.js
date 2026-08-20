@@ -421,12 +421,13 @@ export const MyCheckouts = () => {
                                         renewAllCheckouts(library.baseUrl, language).then((result) => {
                                              if (result?.confirmRenewalFee && result.confirmRenewalFee) {
                                                   setRenewConfirmationResponse({
-                                                       message: result.api.message,
-                                                       title: result.api.title,
+                                                       message: result.message ?? result.api?.message,
+                                                       title: result.title ?? result.api?.title,
                                                        confirmRenewalFee: result.confirmRenewalFee ?? false,
                                                        recordId: record ?? null,
-                                                       action: result.api.action,
-                                                       renewType: 'all' });
+                                                       action: result.action ?? result.api?.action,
+                                                       renewType: 'all',
+                                                  });
                                              }
 
                                              if (result?.confirmRenewalFee && result.confirmRenewalFee) {
