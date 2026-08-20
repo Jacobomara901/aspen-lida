@@ -1126,6 +1126,7 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
           return result;
      }
 
+     popAlert(getTermFromDictionary(language, 'error'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
      return {};
 }
 
@@ -1172,6 +1173,7 @@ export async function confirmRenewCheckout(barcode, recordId, source, itemId, li
           return result;
      }
 
+     popAlert(getTermFromDictionary(language, 'error'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
      return {};
 }
 
@@ -1197,6 +1199,7 @@ export async function renewAllCheckouts(url = null, language = 'en') {
           return result;
      }
 
+     popAlert(getTermFromDictionary(language, 'error'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
      return {};
 }
 
@@ -1228,6 +1231,7 @@ export async function confirmRenewAllCheckouts(url = null, language = 'en') {
           return result;
      }
 
+     popAlert(getTermFromDictionary(language, 'error'), getTermFromDictionary(language, 'error_no_library_connection'), 'error');
      return {};
 }
 
