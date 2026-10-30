@@ -181,6 +181,12 @@ jobs:
         working-directory: ./code
         run: yarn install
 
+      - name: ⚙️ Raise Gradle daemon memory
+        if: matrix.platform == 'android'
+        run: |
+          mkdir -p ~/.gradle
+          printf 'org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\n' >> ~/.gradle/gradle.properties
+
       - name: 📱 Build ${{ env.INSTANCE }} for ${{ matrix.platform }}
         working-directory: ./code
         env:
