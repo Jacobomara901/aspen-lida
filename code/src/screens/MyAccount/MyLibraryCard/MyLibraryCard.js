@@ -43,7 +43,7 @@ export const MyLibraryCard = () => {
      const updateUserProfile = useUpdateUserProfile();
      const library = useLibrary();
      const language = useActiveLanguage();
-     const { theme } = useTheme();
+     const { theme, textColor, colorMode } = useTheme();
 
      let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
 
@@ -201,7 +201,6 @@ export const MyLibraryCard = () => {
           setTimeout(() => setSelectedCard(null), 300);
      };
 
-     const { textColor, colorMode } = useTheme();
      const drawerBg = colorMode === 'light' ? "$warmGray50" : "$coolGray800";
 
      return (
