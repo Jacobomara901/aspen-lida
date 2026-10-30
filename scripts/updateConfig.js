@@ -5,7 +5,12 @@ const version = require('../version.json');
 
 function getSentryUploadUrl(sentryDsn) {
      try {
-          return new URL(sentryDsn).origin + '/';
+          const dsn = new URL(sentryDsn);
+          const isHostedSentry = dsn.hostname.endsWith('.sentry.io');
+          if (isHostedSentry) {
+               return undefined;
+          }
+          return dsn.origin + '/';
      } catch (e) {
           console.log('⚠️  Could not derive Sentry upload url from DSN: ' + sentryDsn);
           return undefined;
