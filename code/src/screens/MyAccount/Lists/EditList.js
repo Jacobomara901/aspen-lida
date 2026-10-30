@@ -100,9 +100,9 @@ const EditList = (props) => {
                               navigateStack('AccountScreenTab', 'MyLists', {
                                    hasPendingChanges: true });
                          }}
-                         mr={3}
+                         mr="$3"
                          p="$1">
-                         <ChevronLeftIcon size={5} color={textColor} />
+                         <ChevronLeftIcon size="lg" color={textColor} />
                     </Pressable>
                ) });
      }, [navigation]);
